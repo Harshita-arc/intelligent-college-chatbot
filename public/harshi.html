@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Intelligent College Chatbot</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+
+            font-family: Arial, sans-serif;
+
+            background: linear-gradient(
+                to right,
+                violet,
+                purple
+            );
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            min-height: 100vh;
+        }
+
+
+        .chat-container {
+
+            width: 600px;
+
+            max-width: 95%;
+
+            background: linear-gradient(
+                to right,
+                #f0f0f0,
+                #e0e0e0
+            );
+
+            border-radius: 25px;
+
+            box-shadow:
+                0 15px 20px rgba(0, 0, 0, 0.2);
+
+            overflow: hidden;
+        }
+
+
+        .header {
+
+            background: radial-gradient(
+                circle,
+                #174a8b,
+                #198754
+            );
+
+            color: white;
+
+            padding: 20px;
+
+            text-align: center;
+        }
+
+
+        .header h1 {
+
+            margin: 0;
+
+            font-size: 24px;
+        }
+
+
+        .header p {
+
+            margin: 8px 0 0;
+        }
+
+
+        #chatbox {
+
+            height: 450px;
+
+            padding: 15px;
+
+            overflow-y: auto;
+
+            background: linear-gradient(
+                to bottom,
+                #dff6ff,
+                #f5e6ff
+            );
+        }
+
+
+        .user {
+
+            text-align: right;
+
+            margin: 10px 0;
+
+            color: #174a8b;
+
+            background: #dbeafe;
+
+            padding: 10px;
+
+            border-radius: 10px;
+        }
+
+
+        .bot {
+
+            text-align: left;
+
+            margin: 10px 0;
+
+            color: #198754;
+
+            background: #dcfce7;
+
+            padding: 10px;
+
+            border-radius: 10px;
+        }
+
+
+        .input-area {
+
+            display: flex;
+
+            padding: 15px;
+
+            gap: 10px;
+
+            background: white;
+        }
+
+
+        #message {
+
+            flex: 1;
+
+            padding: 12px;
+
+            border: 1px solid black;
+
+            border-radius: 10px;
+
+            outline: none;
+
+            font-size: 16px;
+        }
+
+
+        #message:focus {
+
+            border: 2px solid #174a8b;
+        }
+
+
+        button {
+
+            padding: 12px 25px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: linear-gradient(
+                to right,
+                #174a8b,
+                #198754
+            );
+
+            color: white;
+
+            cursor: pointer;
+
+            font-size: 16px;
+        }
+
+
+        button:hover {
+
+            background: linear-gradient(
+                to right,
+                purple,
+                royalblue
+            );
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="chat-container">
+
+
+        <div class="header">
+
+            <h1>🎓 College Chatbot</h1>
+
+            <p>Your College Assistant 🗨️</p>
+
+        </div>
+
+
+        <div id="chatbox">
+
+            <div class="bot">
+
+                <b>🤖:</b>
+
+                Hello! 👋 Ask me about the college 😊
+
+            </div>
+
+        </div>
+
+
+        <div class="input-area">
+
+
+            <input
+                type="text"
+                id="message"
+                placeholder="Ask your question..."
+                onkeydown="checkEnter(event)"
+            >
+
+
+            <button onclick="sendMessage()">
+
+                Send
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+
+    <script>
+
+
+        async function sendMessage() {
+
+            const input =
+                document.getElementById("message");
+
+            const chatbox =
+                document.getElementById("chatbox");
+
+            const message =
+                input.value.trim();
+
+
+            if (message === "") {
+
+                return;
+
+            }
+
+
+            // Display user message
+
+            const userMessage =
+                document.createElement("div");
+
+            userMessage.className = "user";
+
+            userMessage.innerHTML =
+                "<b>👧:</b> " +
+                escapeHTML(message);
+
+            chatbox.appendChild(userMessage);
+
+
+            // Clear input
+
+            input.value = "";
+
+
+            try {
+
+
+                const response =
+                    await fetch("/chat", {
+
+                        method: "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+
+                        },
+
+                        body: JSON.stringify({
+
+                            message: message
+
+                        })
+
+                    });
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Server response error"
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                // Display bot reply
+
+                const botMessage =
+                    document.createElement("div");
+
+                botMessage.className = "bot";
+
+                botMessage.innerHTML =
+                    "<b>🤖:</b> " +
+                    escapeHTML(data.reply);
+
+                chatbox.appendChild(botMessage);
+
+
+            }
+
+            catch (error) {
+
+
+                const errorMessage =
+                    document.createElement("div");
+
+                errorMessage.className = "bot";
+
+                errorMessage.innerHTML =
+                    "<b>🤖:</b> " +
+                    "Server error. Please try again.";
+
+                chatbox.appendChild(errorMessage);
+
+
+                console.error(error);
+
+            }
+
+
+            // Scroll to latest message
+
+            chatbox.scrollTop =
+                chatbox.scrollHeight;
+
+        }
+
+
+        function checkEnter(event) {
+
+            if (event.key === "Enter") {
+
+                sendMessage();
+
+            }
+
+        }
+
+
+        function escapeHTML(text) {
+
+            const div =
+                document.createElement("div");
+
+            div.textContent = text;
+
+            return div.innerHTML;
+
+        }
+
+
+    </script>
+
+
+</body>
+
+</html>
